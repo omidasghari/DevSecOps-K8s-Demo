@@ -33,14 +33,7 @@ pipeline {
         always {
             junit 'target/surefire-reports/*.xml'
 
-            publishHTML([
-                allowMissing: true,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'target/site/jacoco',
-                reportFiles: 'index.html',
-                reportName: 'JaCoCo Report'
-            ])
+            jacoco execpattern 'target/jacoco.exec'
         }
 
         success {
