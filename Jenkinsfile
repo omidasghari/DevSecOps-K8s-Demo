@@ -1,19 +1,13 @@
 pipeline {
-  agent any
+    agent any
 
-  stages {
-      stage('Build Artifact') {
+    stages {
+
+        stage('Git Version') {
             steps {
-              sh "mvn clean package -DskipTests=true"
-              archive 'target/*.jar' 
+                sh 'git --version'
             }
-            }
-            stage('Git Version') {
-            steps {
-              sh "git version"
-             
-            }
-        }  
+        }
 
         stage('Unit Test') {
             steps {
@@ -27,9 +21,10 @@ pipeline {
             }
         }
 
-        stage('Package') {
+        stage('Build Artifact') {
             steps {
-                sh 'mvn package -DskipTests'
+                sh 'mvn clean package -DskipTests=true'
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
     }
@@ -55,10 +50,5 @@ pipeline {
         failure {
             echo 'Build failed.'
         }
-
-
     }
-   }
-        }   
-    
-
+}
