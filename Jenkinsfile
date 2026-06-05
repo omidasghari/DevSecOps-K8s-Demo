@@ -7,11 +7,15 @@ pipeline {
               sh "mvn clean package -DskipTests=true"
               archive 'target/*.jar' 
             }
+            }
             stage('Git Version') {
             steps {
-              sh "git --version"
+              sh "git version"
              
             }
         }   
-    }
-}
+    
+   }
+        }   
+    
+
