@@ -9,15 +9,18 @@ pipeline {
         }
         
         stage('Docker Build and Push') {
-             withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'dockerhubQW12@@##', usernameVariable: 'hgol42')]) {
+    // 1. Define the placeholder names (Keep them generic!)
+    withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
         
-        // Safety check: If GIT_COMMIT is missing/null, use the unique Jenkins Build Number instead
-            def imageTag = env.GIT_COMMIT ?: "build-${env.BUILD_NUMBER}"
+        def imageTag = env.GIT_COMMIT ?: "build-${env.BUILD_NUMBER}"
         
-            sh "docker build -t hgol42/omidfirsthub:${imageTag} ."
-            sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
-            sh "docker push hgol42/omidfirsthub:${imageTag}"
-            sh "docker logout"
+        sh "docker build -t hgol42/omidfirsthub:${imageTag} ."
+        
+        // 2. Use the placeholder names in your shell commands
+        sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
+        
+        sh "docker push hgol42/omidfirsthub:${imageTag}"
+        sh "docker logout"
     }
 }
 
