@@ -28,7 +28,7 @@ pipeline {
         }
          stage('Docker Build and Push') {
             steps {
-              withDockerRegistery([credentialsId: "docker-hub", url:""]) {
+              withDockerRegistry([credentialsId: "docker-hub", url:""]) {
                 sh 'printenv'
                 sh'docker build -t hgol42/omidfirsthub:""$GIT_COMMIT"".'
                 sh'docker push hgol42/omidfirsthub:""$GIT_COMMIT""'
