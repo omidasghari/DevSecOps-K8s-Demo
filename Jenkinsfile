@@ -7,6 +7,20 @@ pipeline {
                 sh 'git --version'
             }
         }
+        
+        stage('Docker Build and Push') {
+             withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'dockerhubQW12@@##', usernameVariable: 'hgol42')]) {
+        
+        // Safety check: If GIT_COMMIT is missing/null, use the unique Jenkins Build Number instead
+            def imageTag = env.GIT_COMMIT ?: "build-${env.BUILD_NUMBER}"
+        
+            sh "docker build -t hgol42/omidfirsthub:${imageTag} ."
+            sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
+            sh "docker push hgol42/omidfirsthub:${imageTag}"
+            sh "docker logout"
+    }
+}
+
 
         stage('Unit Test') {
             steps {
@@ -26,16 +40,7 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
-         stage('Docker Build and Push') {
-            steps {
         
-                withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
-                sh 'printenv'
-                sh 'docker build -t hgol42/AppNumFinal:""$GIT_COMMIT"" .'
-                sh 'docker push hgol42/AppNumFinal:""$GIT_COMMIT""'
-        } 
-    }
-}
 
 }
     }
