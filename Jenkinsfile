@@ -33,8 +33,8 @@ pipeline {
                     sh 'printenv'
                     
                     // FIXED: Corrected username typo (hgol42) to match build and push exactly
-                    sh "docker build -t hgol42/omidfirsthub:${env.GIT_COMMIT} ."
-                    sh "docker push hgol42/omidfirsthub:${env.GIT_COMMIT}"
+                    sh "docker build -t siddharth67/omidfirsthub:${env.GIT_COMMIT} ."
+                    sh "docker push siddharth67/omidfirsthub:${env.GIT_COMMIT}"
                 } 
             }
         }
