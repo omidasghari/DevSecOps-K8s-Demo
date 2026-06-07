@@ -7,6 +7,17 @@ pipeline {
                 sh 'git --version'
             }
         }
+        stage('Docker Build and Push') {
+    steps {
+        withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
+            sh 'printenv'
+            
+            // FIX: Lowercase repository name, clean double quotes, and single space before the dot
+            sh "docker build -t hhgol42/omidfirsthub:${env.GIT_COMMIT} ."
+            sh "docker push hgol42/omidfirsthub:${env.GIT_COMMIT}"
+        } 
+    }
+}
 
         stage('Unit Test') {
             steps {
@@ -26,16 +37,7 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
-         stage('Docker Build and Push') {
-            steps {
         
-                withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
-                sh 'printenv'
-                sh 'docker build -t hgol42/AppNumFinal:""$GIT_COMMIT"" .'
-                sh 'docker push hgol42/AppNumFinal:""$GIT_COMMIT""'
-        } 
-    }
-}
 
 }
     }
