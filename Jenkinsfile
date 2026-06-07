@@ -7,23 +7,6 @@ pipeline {
                 sh 'git --version'
             }
         }
-        
-        stage('Docker Build and Push') {
-    // 1. Define the placeholder names (Keep them generic!)
-    withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-        
-        def imageTag = env.GIT_COMMIT ?: "build-${env.BUILD_NUMBER}"
-        
-        sh "docker build -t hgol42/omidfirsthub:${imageTag} ."
-        
-        // 2. Use the placeholder names in your shell commands
-        sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
-        
-        sh "docker push hgol42/omidfirsthub:${imageTag}"
-        sh "docker logout"
-    }
-}
-
 
         stage('Unit Test') {
             steps {
@@ -44,8 +27,21 @@ pipeline {
             }
         }
         
-
-}
+        stage('Docker Build and Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                    script {
+                        // Safety check: Use build number if Git Commit variable is missing
+                        def imageTag = env.GIT_COMMIT ?: "build-${env.BUILD_NUMBER}"
+                        
+                        sh "docker build -t hgol42/omidfirsthub:${imageTag} ."
+                        sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
+                        sh "docker push hgol42/omidfirsthub:${imageTag}"
+                        sh "docker logout"
+                    }
+                }
+            }
+        }
     }
 
     post {
@@ -72,3 +68,4 @@ pipeline {
             echo 'Build failed.'
         }
     }
+}
