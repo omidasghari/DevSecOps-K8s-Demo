@@ -7,17 +7,6 @@ pipeline {
                 sh 'git --version'
             }
         }
-        stage('Docker Build and Push') {
-    steps {
-        withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
-            sh 'printenv'
-            
-            // FIX: Lowercase repository name, clean double quotes, and single space before the dot
-            sh "docker build -t hhgol42/omidfirsthub:${env.GIT_COMMIT} ."
-            sh "docker push hgol42/omidfirsthub:${env.GIT_COMMIT}"
-        } 
-    }
-}
 
         stage('Unit Test') {
             steps {
@@ -37,17 +26,24 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
-        
 
-}
+        stage('Docker Build and Push') {
+            steps {
+                withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
+                    sh 'printenv'
+                    
+                    // FIXED: Corrected username typo (hgol42) to match build and push exactly
+                    sh "docker build -t hgol42/omidfirsthub:${env.GIT_COMMIT} ."
+                    sh "docker push hgol42/omidfirsthub:${env.GIT_COMMIT}"
+                } 
+            }
+        }
     }
 
     post {
         always {
-            // This works perfectly to ignore empty test folders
             junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
 
-            // FIXED: Using a safe structure for older JaCoCo plugin versions
             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                 jacoco(
                     execPattern: 'target/jacoco.exec',
@@ -66,3 +62,4 @@ pipeline {
             echo 'Build failed.'
         }
     }
+}
