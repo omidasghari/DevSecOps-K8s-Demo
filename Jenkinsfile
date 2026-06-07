@@ -1,65 +1,57 @@
-pipeline {
-    agent any
-
-    stages {
+node {
+    try {
         stage('Git Version') {
-            steps {
-                sh 'git --version'
-            }
+            sh 'git --version'
         }
 
         stage('Unit Test') {
-            steps {
-                sh 'mvn test'
-            }
+            sh 'mvn test'
         }
 
         stage('Code Coverage') {
-            steps {
-                sh 'mvn jacoco:report'
-            }
+            sh 'mvn jacoco:report'
         }
 
         stage('Build Artifact') {
-            steps {
-                sh 'mvn clean package -DskipTests=true'
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-            }
+            sh 'mvn clean package -DskipTests=true'
+            archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
         }
 
         stage('Docker Build and Push') {
-            steps {
-                withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
-                    sh 'printenv'
-                    
-                    // FIXED: Corrected username typo (hgol42) to match build and push exactly
-                    sh "docker build -t siddharth67/numeric-app:${env.GIT_COMMIT} ."
-                    sh "docker push siddharth67/numeric-app:${env.GIT_COMMIT}"
-                } 
-            }
-        }
-    }
+           
+            withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME')]) {
+                
+              
+                sh "docker build -t hgol42/omidfirsthub:${env.GIT_COMMIT} ."
+                
+              
+                sh "echo \$DOCKER_HUB_PASSWORD | docker login -u \$DOCKER_HUB_USERNAME --password-stdin"
+                
 
-    post {
-        always {
-            junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
-
-            catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                jacoco(
-                    execPattern: 'target/jacoco.exec',
-                    classPattern: 'target/classes',
-                    sourcePattern: 'src/main/java',
-                    exclusionPattern: '**/*Test*.class'
-                )
+                sh "docker push hgol42/omidfirsthub:${env.GIT_COMMIT}"
+                sh "docker logout"
             }
         }
 
-        success {
-            echo 'Build completed successfully.'
-        }
+        echo 'Build completed successfully.'
 
-        failure {
-            echo 'Build failed.'
+    } catch (Exception e) {
+        echo "Build failed due to error: ${e.getMessage()}"
+        currentBuild.result = 'FAILURE'
+        throw e
+    } finally {
+        // Safe post-execution steps
+        junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
+        
+        try {
+            jacoco(
+                execPattern: 'target/jacoco.exec',
+                classPattern: 'target/classes',
+                sourcePattern: 'src/main/java',
+                exclusionPattern: '**/*Test*.class'
+            )
+        } catch (Exception je) {
+            echo "Skipping JaCoCo reporting step due to version limits: ${je.getMessage()}"
         }
     }
 }
