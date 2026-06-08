@@ -51,7 +51,7 @@ pipeline {
                         def imageTag = env.GIT_COMMIT ?: "build-${env.BUILD_NUMBER}"
                         
                         // Dynamically updates the placeholder in your YAML file to use your new Docker image
-                        sh "sed -i 's#REPLACE_IMAGE_PLACEHOLDER#hgol42/omidfirsthub:${imageTag}#g' k8s_deployment_service.yaml"
+                        sh "sed -i 's#replace#hgol42/omidfirsthub:${imageTag}#g' k8s_deployment_service.yaml"
                         
                         // Deploys the updated file to your Azure Kubernetes cluster
                         sh "kubectl apply -f k8s_deployment_service.yaml"
