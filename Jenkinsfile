@@ -57,7 +57,7 @@ pipeline {
                     
                     // 2. Wrap only the execution command. 
                     // NOTE: Ensure your Jenkins Global Credential ID matches this string EXACTLY.
-                    withKubeConfig([credentialsId: 'kubeconfige']) {
+                    withKubeConfig([credentialsId: 'kubeconfig']) {
                         echo "Kubeconfig context loaded successfully. Applying manifest..."
                         sh "kubectl apply -f k8s_deployment_service.yaml"
                     }
