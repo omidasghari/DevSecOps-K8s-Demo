@@ -54,9 +54,9 @@ pipeline {
                     // 1. Modifies the image path inside your deployment yaml file
                     sh "sed -i 's#replace#hgol42/omidfirsthub:${env.IMAGE_TAG}#g' k8s_deployment_service.yaml"
                     
-                    // 2. FIXED: Runs kubectl directly using the local .kube/config permissions
+                    // 2. FIXED: Adds the validation override flag so Jenkins won't get blocked by local port conflicts
                     echo "Applying manifest directly to the cluster..."
-                    sh "kubectl apply -f k8s_deployment_service.yaml"
+                    sh "kubectl apply -f k8s_deployment_service.yaml --validate=false"
                 }
             }
         }
