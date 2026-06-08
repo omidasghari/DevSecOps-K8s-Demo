@@ -45,7 +45,7 @@ pipeline {
 
         stage('Kubernetes Deployment - DEV') {
             steps {
-                withKubeConfig([credentialsId: 'kubeconfig']) {
+                withKubeConfig([credentialsId: 'Kubeconfig']) {
                     script {
                         // Safe fallback tag in case GIT_COMMIT is missing
                         def imageTag = env.GIT_COMMIT ?: "build-${env.BUILD_NUMBER}"
