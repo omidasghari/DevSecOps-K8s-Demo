@@ -46,21 +46,17 @@ pipeline {
         stage('Kubernetes Deployment - DEV') {
             steps {
                 script {
-                    // Set the fallback deployment tag safely
                     env.IMAGE_TAG = env.GIT_COMMIT ?: "build-${env.BUILD_NUMBER}"
                     
                     echo "Starting deployment sequence..."
                     echo "Target Image Tag: ${env.IMAGE_TAG}"
                     
-                    // 1. Run the manifest modification before entering the plugin block
+                    // 1. Modifies the image path inside your deployment yaml file
                     sh "sed -i 's#replace#hgol42/omidfirsthub:${env.IMAGE_TAG}#g' k8s_deployment_service.yaml"
                     
-                    // 2. Wrap only the execution command. 
-                    // NOTE: Ensure your Jenkins Global Credential ID matches this string EXACTLY.
-                    withKubeConfig([credentialsId: 'kubeconfig']) {
-                        echo "Kubeconfig context loaded successfully. Applying manifest..."
-                        sh "kubectl apply -f k8s_deployment_service.yaml"
-                    }
+                    // 2. FIXED: Runs kubectl directly using the local .kube/config permissions
+                    echo "Applying manifest directly to the cluster..."
+                    sh "kubectl apply -f k8s_deployment_service.yaml"
                 }
             }
         }
