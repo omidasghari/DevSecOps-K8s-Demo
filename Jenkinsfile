@@ -45,15 +45,20 @@ pipeline {
 
         stage('Kubernetes Deployment - DEV') {
             steps {
-                withKubeConfig([credentialsId: 'Kubeconfig']) {
-                    script {
-                        // Safe fallback tag in case GIT_COMMIT is missing
-                        def imageTag = env.GIT_COMMIT ?: "build-${env.BUILD_NUMBER}"
-                        
-                        // Dynamically updates the placeholder in your YAML file to use your new Docker image
-                        sh "sed -i 's#replace#hgol42/omidfirsthub:${imageTag}#g' k8s_deployment_service.yaml"
-                        
-                        // Deploys the updated file to your Azure Kubernetes cluster
+                script {
+                    // Set the fallback deployment tag safely
+                    env.IMAGE_TAG = env.GIT_COMMIT ?: "build-${env.BUILD_NUMBER}"
+                    
+                    echo "Starting deployment sequence..."
+                    echo "Target Image Tag: ${env.IMAGE_TAG}"
+                    
+                    // 1. Run the manifest modification before entering the plugin block
+                    sh "sed -i 's#replace#hgol42/omidfirsthub:${env.IMAGE_TAG}#g' k8s_deployment_service.yaml"
+                    
+                    // 2. Wrap only the execution command. 
+                    // NOTE: Ensure your Jenkins Global Credential ID matches this string EXACTLY.
+                    withKubeConfig([credentialsId: 'kubeconfige']) {
+                        echo "Kubeconfig context loaded successfully. Applying manifest..."
                         sh "kubectl apply -f k8s_deployment_service.yaml"
                     }
                 }
