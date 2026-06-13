@@ -29,13 +29,14 @@ pipeline {
         
         stage('SonarQube-SAST') {
             steps {
-            sh '''
-              mvn clean verify sonar:sonar \
-            -Dsonar.projectKey=NumericApplication \
-            -Dsonar.projectName=NumericApplication \
-            -Dsonar.host.url=http://devsecdns.westeurope.cloudapp.azure.com:9000 \
-            -Dsonar.token=sqp_9adcadeba47b648c6273a016e7704e5b4f29a053
-        '''
+            withSonarQubeEnv('SonarQube'){
+                sh "mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=numeric-Application -Dsonar.projectName='numeric-Application' -Dsonar.host.url=http://devsecdns.westeurope.cloudapp.azure.com:9000 -Dsonar.token=sqp_bb61718c99e44458b5a2e97ca28f5c16bdb71670"
+            }
+             
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+             
     }
 }
         
