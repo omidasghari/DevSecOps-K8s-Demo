@@ -31,12 +31,11 @@ pipeline {
             steps {
             withSonarQubeEnv('SonarQube'){
                 sh '''
-                        mvn clean verify sonar:sonar \
-                        -Dsonar.projectKey=numeric-Application \
-                        -Dsonar.projectName=numeric-Application \
-                        -Dsonar.host.url=http://devsecdns.westeurope.cloudapp.azure.com:9000 \
-                        -Dsonar.token=sqp_bb61718c99e44458b5a2e97ca28f5c16bdb71670 \
-                        -Dsonar.qualitygate.wait=true
+                        mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+  -Dsonar.projectKey=numeric-Application \
+  -Dsonar.projectName='numeric-Application' \
+  -Dsonar.host.url=http://devsecdns.westeurope.cloudapp.azure.com:9000 \
+  -Dsonar.token=sqp_e0f830a5a601fcffd68dc0486b6bb927834664a9
                     '''
             }
              
